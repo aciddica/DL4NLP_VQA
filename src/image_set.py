@@ -58,7 +58,7 @@ class ImageSet:
             self.image_list[int(i)] = self.in_memory and self._load_image(i)
     def __getitem__(self, index):
         '''e.g.
-        images[9] # returns mindspore.Tensor of shape 3, 64, 64
+        images[25] # returns mindspore.Tensor of shape 3, 64, 64
         images[0] # returns zero tensor of the shape (no such image)
         '''
         image = self.image_list[index]
