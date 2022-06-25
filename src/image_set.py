@@ -1,15 +1,3 @@
-'''
-因为val和test中图片有重复，考虑建一个大图片池，给不同数据集分别引用，如：
-class DataSet:
-    def __init__(self, images, ...):
-        self.images = images
-        ...
-images = ImageSet(128)
-dataset_train = DataSet(images, ...)
-dataset_val = DataSet(images, ...)
-...
-访问不存在的下标会返回零张量，这样没图的问题也可以正常参与训练了。
-'''
 import PIL.Image
 import json
 import numpy
@@ -19,8 +7,8 @@ import mindspore
 path_data = 'data'
 class ImageSet:
     @staticmethod
-    def process(image_size):
-        os.makedirs(f'image_set_{image_size}', exist_ok = True)
+    def process(size_image):
+        os.makedirs(f'image_set_{size_image}', exist_ok = True)
         for part in 'train', 'val', 'test':
             if part != 'test':
                 with open(f'{path_data}/questions/{part}.json') as f:
@@ -33,35 +21,36 @@ class ImageSet:
                         w = image.width
                         m = max(h, w)
                         image = image.crop(((w - m) // 2, (h - m) // 2, (w + m) // 2, (h + m) // 2))
-                        image = image.resize((image_size, image_size))
+                        image = image.resize((size_image, size_image))
                         image = image.convert('RGB')
                         image = numpy.array(image)
                         image = numpy.ascontiguousarray(image.transpose(2, 0, 1))
-                        with open(f'image_set_{image_size}/{image_id}', 'wb') as f:
+                        image = image.reshape((1,) + image.shape)
+                        with open(f'image_set_{size_image}/{image_id}', 'wb') as f:
                             numpy.save(f, image)
     def _load_image(self, index):
-        with open(f'image_set_{self.image_size}/{index}', 'rb') as f:
+        with open(f'image_set_{self.size_image}/{index}', 'rb') as f:
             return numpy.load(f)
-    def __init__(self, image_size, dtype = mindspore.float64):
+    def __init__(self, size_image):
         '''e.g.
         images = ImageSet(64)
-        images[i] # returns mindspore.Tensor of shape 3, 64, 64
+        images[i] # returns numpy.ndarray in shape 1, 3, 64, 64
         '''
-        if not os.path.exists(f'image_set_{image_size}'):
-            self.process(image_size)
-        self.image_size = image_size
-        self.dtype = dtype
-        self.in_memory = image_size < 256
-        self.empty = numpy.zeros((3, self.image_size, self.image_size))
+        if not os.path.exists(f'image_set_{size_image}'):
+            self.process(size_image)
+        self.size_image = size_image
+        self.in_memory = size_image < 256
+        self.empty = numpy.zeros((1, 3, size_image, size_image), numpy.float32)
         self.image_list = [self.empty] * 600000
-        for i in os.listdir(f'image_set_{self.image_size}'):
+        for i in os.listdir(f'image_set_{size_image}'):
             self.image_list[int(i)] = self.in_memory and self._load_image(i)
     def __getitem__(self, index):
         '''e.g.
-        images[25] # returns mindspore.Tensor of shape 3, 64, 64
-        images[0] # returns zero tensor of the shape (no such image)
+        images[25] # returns numpy.ndarray in shape 1, 3, 64, 64
+        images[0] # no such image -> returns numpy.zeros((1, 3, 64, 64))
+        # pixel values are of type numpy.float32 and in range [0, 1)
         '''
         image = self.image_list[index]
         if image is False:
             image = self._load_image(index)
-        return mindspore.Tensor(image, self.dtype)
+        return image.astype(numpy.float32) / 256
