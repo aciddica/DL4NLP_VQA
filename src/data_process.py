@@ -38,10 +38,10 @@ class VQSdataset:
         #     self.images.append(img_path)
         
     def __getitem__(self, index):
-        return self.images[index], Q_A_df['question_tensor'][index], Q_A_df['annotation'][index]
+        return self.images[self.Q_A_df['image_id'][index]], self.Q_A_df['question_tensor'][index], self.Q_A_df['annotation'][index]
 
     def __len__(self):
-        return 233
+        return len(self.Q_A_df['question'])
 
 # def img2tensor(img):
 #     mean = [0.485, 0.456, 0.406]
