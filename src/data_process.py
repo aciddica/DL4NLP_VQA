@@ -8,12 +8,11 @@ from PIL import Image
 from easydict import EasyDict as edict
 
 class VQSdataset:
-    def __init__(self, images, mode = "train", q_dict = None, a_dict = None):
+    def __init__(self, images, mode = "train", Q_A_df = None):
         # self.imgdir_path = ""
         # self.annotations = {}
         # self.qusetion = {}
-        self.q_dict = q_dict
-        self.a_dict = a_dict
+        self.Q_A_df = Q_A_df
         # self.Resize = vision.Resize((512, 512))
         # self.CenterCrop =  vision.CenterCrop(448)
         self.images = images
@@ -39,7 +38,7 @@ class VQSdataset:
         #     self.images.append(img_path)
         
     def __getitem__(self, index):
-        return self.images[index]
+        return self.images[index], Q_A_df['question_tensor'][index], Q_A_df['annotation'][index]
 
     def __len__(self):
         return 233
@@ -92,9 +91,9 @@ class DistributedSampler():
     def __len__(self):
         return self.num_samples
         
-def create_dataset(batch_size, images, mode = 'train',drop_remainder = True, q_dict = None, a_dict = None):
+def create_dataset(batch_size, images, Q_A_df = None, mode = 'train', drop_remainder = True):
     
-    raw_dataset = VQSdataset(mode, images)
+    raw_dataset = VQSdataset(mode, images, Q_A_df)
     sampler = DistributedSampler(raw_dataset)
     dataset = ds.GeneratorDataset(raw_dataset, ["image", "question", "label"], shuffle = False, sampler = sampler)
     # dataset = dataset.map(operations = img2tensor, input_columns = "image", num_parallel_workers = 8)
