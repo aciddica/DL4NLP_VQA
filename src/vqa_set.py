@@ -5,9 +5,12 @@ class VQAPart:
     def __init__(self, images, qas):
         self.images = images
         self.qas = qas
+        self.length = len(qas)
     def __getitem__(self, index):
         image_id, question, answer = self.qas[index]
         return self.images[image_id], question, answer
+    def __len__(self):
+        return self.length
 class VQASet:
     def _part(self, part):
         part = VQAPart(self.images, QASet(part))
