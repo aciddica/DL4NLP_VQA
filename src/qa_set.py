@@ -5,7 +5,7 @@ import re
 from copy import deepcopy
 import word2vec
 class QASet:
-    def __init__(self, part = 'train'):
+    def __init__(self, part):
         self.Q_set,self.A_set = utils.load_json_file(path = './data', mode = part, cleaned=False)
         for item in self.Q_set:
             qst = item['question']
@@ -32,10 +32,14 @@ class QASet:
 
         self.Q_A_df['question'] = rst
         self.Q_A_df.head()
+
         # word2vec_model
         
     def __getitem__(self, index):
         return self.Q_A_df['question'][index], self.Q_A_df['annotation'][index]
+    
+    def __len__(self):
+        return len(self.Q_A_df)
 
     
     def qst2ndarray(self, qst,model):
