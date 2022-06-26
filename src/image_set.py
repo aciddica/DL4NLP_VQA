@@ -6,7 +6,7 @@ import re
 import mindspore
 if not os.path.exists('image_set_224'):
     import moxing
-    moxing.file.copy_parallel('obs://xxh-nlp/final/image_set_224', '.')
+    moxing.file.copy_parallel('obs://xxh-nlp/final/image_set_224', 'image_set_224')
 path_data = 'data'
 class ImageSet:
     @staticmethod
