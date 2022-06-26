@@ -4,7 +4,7 @@ import pandas as pd
 import re
 from copy import deepcopy
 import word2vec
-class QAset:
+class QASet:
     def __init__(self, part = 'train'):
         self.Q_set,self.A_set = utils.load_json_file(path = './data', mode = part, cleaned=False)
         for item in self.Q_set:
