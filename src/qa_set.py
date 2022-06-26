@@ -16,18 +16,15 @@ class QASet:
             qst_vocab = utils.sentence_align(qst_vocab,8)
             item['question'] = deepcopy(qst_vocab)
         
-        print(len(self.Q_set))
-
         self.Q_df = pd.DataFrame(self.Q_set)
         self.A_df = pd.DataFrame(self.A_set)
 
-        self.Q_A_df = self.Q_df.merge(A_df,on = ['question_id','image_id'])
+        self.Q_A_df = self.Q_df.merge(self.A_df,on = ['question_id','image_id'])
         self.Q_A_df = self.Q_A_df[['question_id','image_id','question','multiple_choice_answer']]
         self.Q_A_df['annotation'] = self.Q_A_df['multiple_choice_answer']
         self.Q_A_df = self.Q_A_df[['question_id','image_id','question','annotation']]
-        print(self.Q_A_df.shape)
         self.Q_A_df.head()
-        self.word2vec_model = word2vec.load_word2vec('./src/word_vec/embedding.txt')
+        self.word2vec_model = word2vec.load_word2vec('word_vec/embedding.txt')
         
         rst = []
         for item in  self.Q_A_df['question']:
