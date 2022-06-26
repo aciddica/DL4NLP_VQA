@@ -31,7 +31,7 @@ class ImageSet:
     def _load_image(self, index):
         with open(f'image_set_{self.size_image}/{index}', 'rb') as f:
             return numpy.load(f)
-    def __init__(self, size_image):
+    def __init__(self, size_image = 224):
         '''e.g.
         images = ImageSet(64)
         images[i] # returns numpy.ndarray in shape 1, 3, 64, 64
