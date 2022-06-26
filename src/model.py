@@ -96,8 +96,12 @@ class Loss(mindspore.nn.Cell):
         prediction = self.net(image, question)
         loss = ... # some function to compare prediction and answer
         return loss
+'''e.g.
+from vqa_set import VQASet
+vqa_set = VQASet(25)
 vqa_net = VQANet(224, 8, 100, 1024, 1024)
 loss = Loss(vqa_net)
 optimizer = mindspore.nn.SGD(loss.trainable_params()) # or some customized optimizer
 model = mindspore.Model(loss, None, optimizer)
-model.train(n_iterations, dataset_train, ...)
+model.train(n_iterations, vqa_net.train, ...)
+'''

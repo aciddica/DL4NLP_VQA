@@ -25,7 +25,6 @@ class ImageSet:
                         image = image.convert('RGB')
                         image = numpy.array(image)
                         image = numpy.ascontiguousarray(image.transpose(2, 0, 1))
-                        image = image.reshape((1,) + image.shape)
                         with open(f'image_set_{size_image}/{image_id}', 'wb') as f:
                             numpy.save(f, image)
     def _load_image(self, index):
@@ -34,20 +33,20 @@ class ImageSet:
     def __init__(self, size_image = 224):
         '''e.g.
         images = ImageSet(64)
-        images[i] # returns numpy.ndarray in shape 1, 3, 64, 64
+        images[i] # returns numpy.ndarray in shape 3, 64, 64
         '''
         if not os.path.exists(f'image_set_{size_image}'):
             self.process(size_image)
         self.size_image = size_image
         self.in_memory = size_image < 256
-        self.empty = numpy.zeros((1, 3, size_image, size_image), numpy.float32)
+        self.empty = numpy.zeros((3, size_image, size_image), numpy.float32)
         self.image_list = [self.empty] * 600000
         for i in os.listdir(f'image_set_{size_image}'):
             self.image_list[int(i)] = self.in_memory and self._load_image(i)
     def __getitem__(self, index):
         '''e.g.
-        images[25] # returns numpy.ndarray in shape 1, 3, 64, 64
-        images[0] # no such image -> returns numpy.zeros((1, 3, 64, 64))
+        images[25] # returns numpy.ndarray in shape 3, 64, 64
+        images[0] # no such image -> returns numpy.zeros((3, 64, 64))
         # pixel values are of type numpy.float32 and in range [0, 1)
         '''
         image = self.image_list[index]
