@@ -7,8 +7,11 @@ import mindspore
 path_data = 'data'
 class ImageSet:
     @staticmethod
-    def process(size_image):
+    def process(size_image, in_memory):
         os.makedirs(f'image_set_{size_image}', exist_ok = True)
+        if in_memory:
+            image_id_list = []
+            image_list = []
         for part in 'train', 'val', 'test':
             if part != 'test':
                 with open(f'{path_data}/questions/{part}.json') as f:
@@ -25,31 +28,46 @@ class ImageSet:
                         image = image.convert('RGB')
                         image = numpy.array(image)
                         image = numpy.ascontiguousarray(image.transpose(2, 0, 1))
-                        with open(f'image_set_{size_image}/{image_id}', 'wb') as f:
-                            numpy.save(f, image)
-    def _load_image(self, index):
-        with open(f'image_set_{self.size_image}/{index}', 'rb') as f:
-            return numpy.load(f)
+                        if in_memory:
+                            image_id_list.append(image_id)
+                            image_list.append(image)
+                        else:
+                            with open(f'image_set_{size_image}/{image_id}', 'wb') as f:
+                                numpy.save(f, image)
+        if in_memory:
+            with open(f'image_set_{size_image}/image_ids', 'wb') as f:
+                numpy.save(f, numpy.array(image_id_list, numpy.int32))
+            with open(f'image_set_{size_image}/images', 'wb') as f:
+                numpy.save(f, numpy.array(image_list))
     def __init__(self, size_image = 224):
         '''e.g.
         images = ImageSet(64)
         images[i] # returns numpy.ndarray in shape 3, 64, 64
         '''
-        if not os.path.exists(f'image_set_{size_image}'):
-            self.process(size_image)
         self.size_image = size_image
         self.in_memory = size_image < 256
+        if not os.path.exists(f'image_set_{size_image}'):
+            self.process(size_image, self.in_memory)
         self.empty = numpy.zeros((3, size_image, size_image), numpy.float32)
-        self.image_list = [self.empty] * 600000
-        for i in os.listdir(f'image_set_{size_image}'):
-            self.image_list[int(i)] = self.in_memory and self._load_image(i)
+        self.index = [self.empty] * 600000
+        if self.in_memory:
+            with open(f'image_set_{self.size_image}/image_ids', 'rb') as f:
+                image_ids = numpy.load(f)
+            with open(f'image_set_{self.size_image}/images', 'rb') as f:
+                images = numpy.load(f)
+            for image_id, image in zip(image_ids, images):
+                self.index[image_id] = image
+        else:
+            for i in os.listdir(f'image_set_{size_image}'):
+                self.index[int(i)] = None
     def __getitem__(self, index):
         '''e.g.
         images[25] # returns numpy.ndarray in shape 3, 64, 64
         images[0] # no such image -> returns numpy.zeros((3, 64, 64))
         # pixel values are of type numpy.float32 and in range [0, 1)
         '''
-        image = self.image_list[index]
-        if image is False:
-            image = self._load_image(index)
+        image = self.index[index]
+        if image is None:
+            with open(f'image_set_{self.size_image}/{index}', 'rb') as f:
+                image = numpy.load(f)
         return image.astype(numpy.float32) / 256
