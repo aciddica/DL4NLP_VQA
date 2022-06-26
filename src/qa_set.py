@@ -1,8 +1,9 @@
-import src.utils as utils
+import numpy
+import utils
 import pandas as pd
 import re
 from copy import deepcopy
-import src.word2vec as word2vec
+import word2vec
 class QAset:
     def __init__(self, part = 'train'):
         self.Q_set,self.A_set = utils.load_json_file(path = './data', mode = part, cleaned=False)
@@ -30,24 +31,24 @@ class QAset:
         
         rst = []
         for item in  self.Q_A_df['question']:
-            rst.append(self.qst2tenser(item,self.word2vec_model))
+            rst.append(self.qst2ndarray(item,self.word2vec_model))
 
-        self.Q_A_df['question_tensor'] = rst
+        self.Q_A_df['question'] = rst
         self.Q_A_df.head()
         # word2vec_model
         
     def __getitem__(self, index):
-        return self.Q_A_df['question_tensor'][index], self.Q_A_df['annotation'][index]
+        return self.Q_A_df['question'][index], self.Q_A_df['annotation'][index]
 
     
-    def qst2tenser(qst,model):
+    def qst2ndarray(qst,model):
         '''
         note: 尚未测试,可能有bug
         '''
-        qst_tensor = []
+        qst_list = []
         for item in qst:
             if item == '<INS>':
-                qst_tensor.append([[0]*100])
+                qst_list.append([[0]*100])
             else :
-                qst_tensor.append(model[item])
-        return qst_tensor
+                qst_list.append(model[item])
+        return numpy.array(qst_list, numpy.float32)
