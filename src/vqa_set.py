@@ -13,7 +13,11 @@ class VQASet:
         part = VQAPart(self.images, QASet(part))
         part = mindspore.dataset.GeneratorDataset(part, ['image', 'question', 'answer'])
         return part
-    def __init__(self, size_batch):
+    def __init__(self, size_batch = 1):
+        '''e.g.
+        vqa_set = VQASet()
+        model.train(n_epochs, vqa_set.train, ...)
+        '''
         self.images = ImageSet()
         self.train = self._part('train')
         self.train = self.train.batch(size_batch)
