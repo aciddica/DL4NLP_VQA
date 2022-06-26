@@ -40,7 +40,7 @@ def load_json_file(path,mode,cleaned):
     if cleaned:
         A_set = json.load(a_path)
     else:
-        A_set = json.load(a_path)['annotation']
+        A_set = json.load(a_path)['annotations']
 
     a_path.close()
     return Q_set,A_set
