@@ -28,7 +28,7 @@ class ResNet18(mindspore.nn.Cell):
         self.end = mindspore.nn.SequentialCell([
             mindspore.nn.AvgPool2d(size),
             mindspore.nn.Flatten(),
-            mindspore.nn.Dense(size, size_feature),
+            mindspore.nn.Dense(512, size_feature),
         ])
     def construct(self, x):
         x = self.conv1(x)
@@ -68,10 +68,17 @@ class VQANet(mindspore.nn.Cell):
         self.size_feature = size_feature
         self.size_output = size_output
         self.cell_image = ResNet18(size_image, size_feature)
-        self.cell_question = mindspore.nn.SequentialCell([
-            ...,
-            mindspore.nn.Dense(..., size_feature),
-        ])
+        # self.cell_question = mindspore.nn.SequentialCell([
+        #     ...,
+        #     mindspore.nn.Dense(..., size_feature),
+        # ])
+        '''
+        !
+        TODO 1
+        !
+        define self.cell_question
+        output should be in shape (size_batch, size_feature)
+        '''
         self.cell_feature = mindspore.nn.SequentialCell([
             mindspore.nn.Dense(size_feature, size_output),
             mindspore.nn.Softmax(),
@@ -83,23 +90,29 @@ class VQANet(mindspore.nn.Cell):
         feature = _relu(feature)
         feature = self.cell_feature(feature)
         return feature
-    def answer(self, image, question):
-        answer = self.construct(image, question)
-        answer = ...(answer)
-        # decode mindspore.Tensor in shape (size_batch, size_output) to size_batch-tuple of str
-        return answer
-class Loss(mindspore.nn.Cell):
+class VQALoss(mindspore.nn.Cell):
     def __init__(self, net):
-        super().__init__()
+        super().__init__(False)
         self.net = net
     def construct(self, image, question, answer):
         prediction = self.net(image, question)
-        loss = ... # some function to compare prediction and answer
+        # loss = ... # some function to compare prediction and answer
+        '''
+        !
+        TODO 2
+        !
+        prediction: mindspore.Tensor in shape (size_batch, length_output_vector)
+        this is the raw output of a VQANet
+        answer: mindspore.Tensor in shape ((size_batch,) + shape_answer)
+        this is the annotation provided by a VQASet
+        calculate the loss between prediction & answer, and assign to loss
+        this function will be differentiated, so do not incorporate complicated algorithms like for-clauses
+        '''
         return loss
 '''e.g.
-vqa_net = VQANet(224, 8, 100, 1024, 1024)
-loss = Loss(vqa_net)
+net = VQANet(224, 8, 100, 1024, 1024)
+loss = VQALoss(net)
 optimizer = mindspore.nn.SGD(loss.trainable_params())
 model = mindspore.Model(loss, None, optimizer)
-model.train(n_epochs, vqa_set.train, ...)
+model.train(n_epochs, dataset.train, ...)
 '''
