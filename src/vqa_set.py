@@ -9,7 +9,7 @@ class VQAPart:
         image_id, question, answer = self.qas[index]
         return self.images[image_id], question, answer
 class VQASet:
-    def _part(part):
+    def _part(self, part):
         part = VQAPart(self.images, QASet(part))
         part = mindspore.dataset.GeneratorDataset(part, ['image', 'question', 'answer'])
         return part
