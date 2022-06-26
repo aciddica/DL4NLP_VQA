@@ -4,6 +4,9 @@ import numpy
 import os
 import re
 import mindspore
+if not os.path.exists('image_set_224'):
+    import moxing
+    moxing.file.copy_parallel('obs://xxh-nlp/final/image_set_224', '.')
 path_data = 'data'
 class ImageSet:
     @staticmethod
