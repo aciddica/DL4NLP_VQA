@@ -97,7 +97,7 @@ class Loss(mindspore.nn.Cell):
         loss = ... # some function to compare prediction and answer
         return loss
 '''e.g.
-from vqa_set import VQASet
+from vqa_set import VQASet, Loss
 vqa_set = VQASet(25)
 vqa_net = VQANet(224, 8, 100, 1024, 1024)
 loss = Loss(vqa_net)
