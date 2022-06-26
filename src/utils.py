@@ -3,49 +3,47 @@ import numpy as np
 import re
 import os
 
-def load_json_file(path,cleaned):
+def load_json_file(path,mode,cleaned):
     '''
     path : 到data的目录,包含data,不包含末尾'/'
     return : list,每个entry都是一个字典
             Q_set : {}
             A_set : {}
     '''
-    j_eval = open(path + '/questions/val.json')
-    j_train = open(path + '/questions/train.json')
-    j_test = open(path+'/questions/test.json')
-    if cleaned:
-        Q_train = json.load(j_train)
-        Q_eval = json.load(j_eval)
-        Q_test = json.load(j_test)
+    # j_eval = open(path + '/questions/val.json')
+    # j_train = open(path + '/questions/train.json')
+    # j_test = open(path+'/questions/test.json')
+    if(mode == 'train'):
+        j_path = open(os.path.join(path, 'question/train.json'))
+    elif(mode == 'val'):
+        j_path = open(os.path.join(path, 'question/val.json'))
     else:
-        Q_train = json.load(j_train)['questions']
-        Q_eval = json.load(j_eval)['questions']
-        Q_test = json.load(j_test)['questions']
-    
-    j_eval.close()
-    j_train.close()
-    j_train.close()
-
-    j_eval = open(path +'/annotations/val.json')
-    j_train = open(path + '/annotations/train.json')
-    j_test = open(path + '/annotations/test.json')
-
+        j_path = open(os.path.join(path, 'question/test.json'))
     if cleaned:
-        A_train = json.load(j_train)
-        A_eval = json.load(j_eval)
-        A_test = json.load(j_test)
+        Q_set = json.load(j_path)
     else:
-        A_train = json.load(j_train)['annotations']
-        A_eval = json.load(j_eval)['annotations']
-        A_test = json.load(j_test)['annotations']
+       Q_set = json.load(j_path)['questions']
+    j_path.close()
+    # j_eval.close()
+    # j_train.close()
+    # j_train.close()
 
-    j_eval.close()
-    j_train.close()
-    j_train.close()
+    # j_eval = open(path +'/annotations/val.json')
+    # j_train = open(path + '/annotations/train.json')
+    # j_test = open(path + '/annotations/test.json')
+    if(mode == 'train'):
+        a_path = open(os.path.join(path, 'question/train.json'))
+    elif(mode == 'val'):
+        a_path = open(os.path.join(path, 'question/val.json'))
+    else:
+        a_path = open(os.path.join(path, 'question/test.json'))
+    if cleaned:
+        A_set = json.load(a_path)
+    else:
+        A_set = json.load(a_path)['annotations']
 
-    print("train : {}, eval : {}, test : {}".format(len(A_train),len(A_eval),len(A_test)))
-    Q_set = Q_train+Q_eval+Q_test
-    A_set = A_train+A_eval+A_test
+    a_path.close()
+    print(mode," : {}".format(len(A_set)))
     return Q_set,A_set
 
 def get_all_img_id(path):
