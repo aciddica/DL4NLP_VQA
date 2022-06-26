@@ -22,7 +22,7 @@ def load_json_file(path,mode,cleaned):
     if cleaned:
         Q_set = json.load(j_path)
     else:
-       Q_set = json.load(j_path)['questions']
+        Q_set = json.load(j_path)['questions']
     j_path.close()
     # j_eval.close()
     # j_train.close()
@@ -40,10 +40,9 @@ def load_json_file(path,mode,cleaned):
     if cleaned:
         A_set = json.load(a_path)
     else:
-        A_set = json.load(a_path)['annotations']
+        A_set = json.load(a_path)['annotation']
 
     a_path.close()
-    print(mode," : {}".format(len(A_set)))
     return Q_set,A_set
 
 def get_all_img_id(path):
@@ -117,7 +116,6 @@ def check_QA_dataset_for_img(Q_img_id,img_id):
             index.append(i)
             img_nowhere.append(item)
 
-    print("{} questions/anwser have no corrsponding img .{}".format(len(img_nowhere),len(img_nowhere)/len(Q_img_id)))
     return index
 
 def check_QA_corres(Q_id,A_Q_id):
