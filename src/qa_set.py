@@ -41,7 +41,7 @@ class QASet:
         return self.Q_A_df['question'][index], self.Q_A_df['annotation'][index]
 
     
-    def qst2ndarray(qst,model):
+    def qst2ndarray(self, qst,model):
         '''
         note: 尚未测试,可能有bug
         '''
