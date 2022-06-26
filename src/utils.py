@@ -32,15 +32,15 @@ def load_json_file(path,mode,cleaned):
     # j_train = open(path + '/annotations/train.json')
     # j_test = open(path + '/annotations/test.json')
     if(mode == 'train'):
-        a_path = open(os.path.join(path, 'questions/train.json'))
+        a_path = open(os.path.join(path, 'annotations/train.json'))
     elif(mode == 'val'):
-        a_path = open(os.path.join(path, 'questions/val.json'))
+        a_path = open(os.path.join(path, 'annotations/val.json'))
     else:
-        a_path = open(os.path.join(path, 'questions/test.json'))
+        a_path = open(os.path.join(path, 'annotations/test.json'))
     if cleaned:
         A_set = json.load(a_path)
     else:
-        A_set = json.load(a_path)['annotation']
+        A_set = json.load(a_path)['annotations']
 
     a_path.close()
     print(mode," : {}".format(len(A_set)))
