@@ -1,6 +1,6 @@
 import mindspore.dataset
 from image_set import ImageSet
-from ... import QASet # filename?
+from qa_set import QASet
 class VQAPart:
     def __init__(self, images, qas):
         self.images = images
