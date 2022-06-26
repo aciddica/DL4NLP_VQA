@@ -45,7 +45,7 @@ class QASet:
         qst_list = []
         for item in qst:
             if item == '<INS>':
-                qst_list.append([[0]*100])
+                qst_list.append(numpy.zeros((100,), numpy.float32))
             else :
                 qst_list.append(model[item])
         return numpy.array(qst_list, numpy.float32)
