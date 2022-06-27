@@ -10,9 +10,6 @@ def load_json_file(path,mode,cleaned):
             Q_set : {}
             A_set : {}
     '''
-    # j_eval = open(path + '/questions/val.json')
-    # j_train = open(path + '/questions/train.json')
-    # j_test = open(path+'/questions/test.json')
     if(mode == 'train'):
         j_path = open(os.path.join(path, 'questions/train.json'))
     elif(mode == 'val'):
@@ -24,13 +21,6 @@ def load_json_file(path,mode,cleaned):
     else:
         Q_set = json.load(j_path)['questions']
     j_path.close()
-    # j_eval.close()
-    # j_train.close()
-    # j_train.close()
-
-    # j_eval = open(path +'/annotations/val.json')
-    # j_train = open(path + '/annotations/train.json')
-    # j_test = open(path + '/annotations/test.json')
     if(mode == 'train'):
         a_path = open(os.path.join(path, 'annotations/train.json'))
     elif(mode == 'val'):

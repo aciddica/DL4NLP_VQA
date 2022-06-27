@@ -4,7 +4,6 @@ from multiprocessing import cpu_count
 from gensim.models import Word2Vec
 from gensim.models import KeyedVectors
 from gensim import corpora
-from collections import defaultdict
 
 def get_vocab(Q_set,A_set,config,stoplist):
     
@@ -34,7 +33,6 @@ def get_vocab(Q_set,A_set,config,stoplist):
     return Vocab
 
 def gen_word2vec(Vocab,path):
-    from multiprocessing import cpu_count
     model = Word2Vec(Vocab,vector_size=100,window = 3,min_count = 1,workers = cpu_count(),sg = 1)
     model.wv.save_word2vec_format(path,binary=False)
     return model
@@ -42,29 +40,26 @@ def gen_word2vec(Vocab,path):
 def load_word2vec(path):
     return KeyedVectors.load_word2vec_format(path)
 
-# def qst2tenser(qst,model):
-#     '''
-#     note: 有bug
-#     '''
-#     qst_tensor = []
-#     for item in qst:
-#         if item == '<INS>':
-#             qst_tensor.append([[0]*100])
-#         else :
-#             qst_tensor.append(model[item])
-#     return qst_tensor
-def qst2ndarray(qst,model):
-    return numpy.array([model[i] for i in qst if i != '<INS>'], numpy.float32)
+def QA2ndarray(qst,model):
+    qst_tensor = []
+    for item in qst:
+        if item == '<INS>':
+            qst_tensor.append(numpy.array([0 for _ in range(100)],dtype=numpy.float32))
+        else :
+            qst_tensor.append(model[item])
+            if len(model[item]) != 100:
+                raise Exception("lenth fail : {},word : {}".format(len(model[item]),item))
+
+    return numpy.array(qst_tensor)
+
+# def ans2ndarray(ans, model):
+
     
 def other(Vocab):
     '''
     just put some 'may be useful' code there
     '''
     dictionary = corpora.Dictionary(Vocab)   # 生成词典
-
-    # 将文档存入字典，字典有很多功能，比如
-    # diction.token2id 存放的是单词-id key-value对
-    # diction.dfs 存放的是单词的出现频率
     dictionary.save('./pre/vocab.dict')  # store the dictionary, for future reference
     corpus = [dictionary.doc2bow(sentence) for sentence in Vocab]
     corpora.MmCorpus.serialize('./pre/vocab.mm', corpus)
@@ -73,11 +68,7 @@ def other(Vocab):
 TODO
 fill in the functions below
 '''
-def annotation2ndarray(annotation, model):
-    '''
-    annotation: element in Q_A_df['annotation']
-    returns numpy.ndarray of dtype numpy.float32
-    '''
+
 def decode(prediction):
     '''
     prediction: mindspore.Tensor in shape (size_batch, length_output_vector)
