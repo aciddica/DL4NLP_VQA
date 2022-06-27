@@ -1,4 +1,4 @@
-from model import VQANet, Loss
+from model import VQANet, VQALoss
 from vqa_set import VQASet
 import word2vec
 class VQACallback(mindspore.train.callback.Callback):
