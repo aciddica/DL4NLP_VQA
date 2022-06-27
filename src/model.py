@@ -1,4 +1,5 @@
 import mindspore
+_ones = mindspore.ops.Ones()
 _relu = mindspore.ops.ReLU()
 class ResNet18(mindspore.nn.Cell):
     def _block(n):
@@ -51,6 +52,23 @@ class ResNet18(mindspore.nn.Cell):
         x = _relu(x)
         x = self.end(x)
         return x
+class LSTM512(mindspore.nn.Cell):
+    def __init__(self, size_word, size_feature):
+        super().__init__()
+        self.lstm = mindspore.nn.LSTM(size_word, 512, 2, batch_first = True)
+        self.end = mindspore.nn.Dense(512, size_feature)
+    def construct(self, x):
+        size_batch = x.shape[0]
+        x = self.lstm(
+            x,
+            (
+                _ones((2, size_batch, 512), mindspore.float32),
+                _ones((2, size_batch, 512), mindspore.float32),
+            ),
+        )[1][0][1]
+        x = _relu(x)
+        x = self.end(x)
+        return x
 class VQANet(mindspore.nn.Cell):
     def __init__(self, size_image, size_question, size_word, size_feature, size_output):
         '''e.g.
@@ -68,17 +86,7 @@ class VQANet(mindspore.nn.Cell):
         self.size_feature = size_feature
         self.size_output = size_output
         self.cell_image = ResNet18(size_image, size_feature)
-        # self.cell_question = mindspore.nn.SequentialCell([
-        #     ...,
-        #     mindspore.nn.Dense(..., size_feature),
-        # ])
-        '''
-        !
-        TODO 1
-        !
-        define self.cell_question
-        output should be in shape (size_batch, size_feature)
-        '''
+        self.cell_question = LSTM512(size_word, size_feature)
         self.cell_feature = mindspore.nn.SequentialCell([
             mindspore.nn.Dense(size_feature, size_output),
             mindspore.nn.Softmax(),

@@ -11,8 +11,8 @@ size_image_in_memory_max = 256
 class ImageSet:
     @staticmethod
     def process(size_image):
-        in_memory = size_image < size_image_in_memory_max
         os.makedirs(f'image_set_{size_image}', exist_ok = True)
+        in_memory = size_image < size_image_in_memory_max
         if in_memory:
             i_image = 0
             image_ids = numpy.empty((i_image_max,), numpy.uint32)

@@ -32,6 +32,12 @@ class QASet:
 
         self.Q_A_df['question'] = rst
         self.Q_A_df.head()
+        '''
+        !
+        TODO 1
+        !
+        encode annotations to numpy.ndarray
+        '''
 
         # word2vec_model
         
@@ -49,7 +55,8 @@ class QASet:
         qst_list = []
         for item in qst:
             if item == '<INS>':
-                qst_list.append(numpy.zeros((100,), numpy.float32))
+                pass
+                # qst_list.append(numpy.zeros((100,), numpy.float32))
             else :
                 qst_list.append(model[item])
         return numpy.array(qst_list, numpy.float32)
