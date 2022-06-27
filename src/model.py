@@ -3,11 +3,11 @@ import word2vec
 _ones = mindspore.ops.Ones()
 _relu = mindspore.ops.ReLU()
 class ResNet18(mindspore.nn.Cell):
-    def _block(n):
+    def _block(self, i, o):
         return mindspore.nn.SequentialCell([
-            mindspore.nn.Conv2d(n, n, 3),
+            mindspore.nn.Conv2d(i, o, 3, o // i),
             mindspore.nn.ReLU(),
-            mindspore.nn.Conv2d(n, n, 3),
+            mindspore.nn.Conv2d(o, o, 3),
         ])
     def __init__(self, size_image, size_feature):
         super().__init__()
@@ -15,17 +15,17 @@ class ResNet18(mindspore.nn.Cell):
             mindspore.nn.Conv2d(3, 64, 7, 2),
             mindspore.nn.MaxPool2d(3, 2, 'same'),
         ])
-        self.conv2_1 = self._block(64)
-        self.conv2_2 = self._block(64)
+        self.conv2_1 = self._block(64, 64)
+        self.conv2_2 = self._block(64, 64)
         self.resize3 = mindspore.nn.Conv2d(64, 128, 1, 2)
-        self.conv3_1 = self._block(128)
-        self.conv3_2 = self._block(128)
+        self.conv3_1 = self._block(64, 128)
+        self.conv3_2 = self._block(128, 128)
         self.resize4 = mindspore.nn.Conv2d(128, 256, 1, 2)
-        self.conv4_1 = self._block(256)
-        self.conv4_2 = self._block(256)
+        self.conv4_1 = self._block(128, 256)
+        self.conv4_2 = self._block(256, 256)
         self.resize5 = mindspore.nn.Conv2d(256, 512, 1, 2)
-        self.conv5_1 = self._block(512)
-        self.conv5_2 = self._block(512)
+        self.conv5_1 = self._block(256, 512)
+        self.conv5_2 = self._block(512, 512)
         size = -(-size_image // 32)
         self.end = mindspore.nn.SequentialCell([
             mindspore.nn.AvgPool2d(size),
