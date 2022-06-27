@@ -1,11 +1,13 @@
 import mindspore
+import word2vec
+_ones = mindspore.ops.Ones()
 _relu = mindspore.ops.ReLU()
 class ResNet18(mindspore.nn.Cell):
-    def _block(n):
+    def _block(self, i, o):
         return mindspore.nn.SequentialCell([
-            mindspore.nn.Conv2d(n, n, 3),
+            mindspore.nn.Conv2d(i, o, 3, o // i),
             mindspore.nn.ReLU(),
-            mindspore.nn.Conv2d(n, n, 3),
+            mindspore.nn.Conv2d(o, o, 3),
         ])
     def __init__(self, size_image, size_feature):
         super().__init__()
@@ -13,17 +15,17 @@ class ResNet18(mindspore.nn.Cell):
             mindspore.nn.Conv2d(3, 64, 7, 2),
             mindspore.nn.MaxPool2d(3, 2, 'same'),
         ])
-        self.conv2_1 = self._block(64)
-        self.conv2_2 = self._block(64)
+        self.conv2_1 = self._block(64, 64)
+        self.conv2_2 = self._block(64, 64)
         self.resize3 = mindspore.nn.Conv2d(64, 128, 1, 2)
-        self.conv3_1 = self._block(128)
-        self.conv3_2 = self._block(128)
+        self.conv3_1 = self._block(64, 128)
+        self.conv3_2 = self._block(128, 128)
         self.resize4 = mindspore.nn.Conv2d(128, 256, 1, 2)
-        self.conv4_1 = self._block(256)
-        self.conv4_2 = self._block(256)
+        self.conv4_1 = self._block(128, 256)
+        self.conv4_2 = self._block(256, 256)
         self.resize5 = mindspore.nn.Conv2d(256, 512, 1, 2)
-        self.conv5_1 = self._block(512)
-        self.conv5_2 = self._block(512)
+        self.conv5_1 = self._block(256, 512)
+        self.conv5_2 = self._block(512, 512)
         size = -(-size_image // 32)
         self.end = mindspore.nn.SequentialCell([
             mindspore.nn.AvgPool2d(size),
@@ -51,6 +53,23 @@ class ResNet18(mindspore.nn.Cell):
         x = _relu(x)
         x = self.end(x)
         return x
+class LSTM512(mindspore.nn.Cell):
+    def __init__(self, size_word, size_feature):
+        super().__init__()
+        self.lstm = mindspore.nn.LSTM(size_word, 512, 2, batch_first = True)
+        self.end = mindspore.nn.Dense(512, size_feature)
+    def construct(self, x):
+        size_batch = x.shape[0]
+        x = self.lstm(
+            x,
+            (
+                _ones((2, size_batch, 512), mindspore.float32),
+                _ones((2, size_batch, 512), mindspore.float32),
+            ),
+        )[1][0][1]
+        x = _relu(x)
+        x = self.end(x)
+        return x
 class VQANet(mindspore.nn.Cell):
     def __init__(self, size_image, size_question, size_word, size_feature, size_output):
         '''e.g.
@@ -68,17 +87,7 @@ class VQANet(mindspore.nn.Cell):
         self.size_feature = size_feature
         self.size_output = size_output
         self.cell_image = ResNet18(size_image, size_feature)
-        # self.cell_question = mindspore.nn.SequentialCell([
-        #     ...,
-        #     mindspore.nn.Dense(..., size_feature),
-        # ])
-        '''
-        !
-        TODO 1
-        !
-        define self.cell_question
-        output should be in shape (size_batch, size_feature)
-        '''
+        self.cell_question = LSTM512(size_word, size_feature)
         self.cell_feature = mindspore.nn.SequentialCell([
             mindspore.nn.Dense(size_feature, size_output),
             mindspore.nn.Softmax(),
@@ -96,18 +105,7 @@ class VQALoss(mindspore.nn.Cell):
         self.net = net
     def construct(self, image, question, answer):
         prediction = self.net(image, question)
-        # loss = ... # some function to compare prediction and answer
-        '''
-        !
-        TODO 2
-        !
-        prediction: mindspore.Tensor in shape (size_batch, length_output_vector)
-        this is the raw output of a VQANet
-        answer: mindspore.Tensor in shape ((size_batch,) + shape_answer)
-        this is the annotation provided by a VQASet
-        calculate the loss between prediction & answer, and assign to loss
-        this function will be differentiated, so do not incorporate complicated algorithms like for-clauses
-        '''
+        loss = word2vec.loss(prediction, answer)
         return loss
 '''e.g.
 net = VQANet(224, 8, 100, 1024, 1024)

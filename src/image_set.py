@@ -4,17 +4,19 @@ import numpy
 import os
 import re
 import mindspore
-if not os.path.exists('image_set_224'):
-    import moxing
-    moxing.file.copy_parallel('obs://xxh-nlp/final/image_set_224', 'image_set_224')
 path_data = 'data'
+image_id_max = 600000
+i_image_max = 80000
+size_image_in_memory_max = 256
 class ImageSet:
     @staticmethod
-    def process(size_image, in_memory):
+    def process(size_image):
         os.makedirs(f'image_set_{size_image}', exist_ok = True)
+        in_memory = size_image < size_image_in_memory_max
         if in_memory:
-            image_id_list = []
-            image_list = []
+            i_image = 0
+            image_ids = numpy.empty((i_image_max,), numpy.uint32)
+            images = numpy.empty((i_image_max, 3, size_image, size_image), numpy.uint8)
         for part in 'train', 'val', 'test':
             if part != 'test':
                 with open(f'{path_data}/questions/{part}.json') as f:
@@ -30,29 +32,31 @@ class ImageSet:
                         image = image.resize((size_image, size_image))
                         image = image.convert('RGB')
                         image = numpy.array(image)
-                        image = numpy.ascontiguousarray(image.transpose(2, 0, 1))
+                        image = image.transpose(2, 0, 1)
                         if in_memory:
-                            image_id_list.append(image_id)
-                            image_list.append(image)
+                            image_ids[i_image] = image_id
+                            images[i_image] = image
+                            i_image += 1
                         else:
+                            image = numpy.ascontiguousarray(image)
                             with open(f'image_set_{size_image}/{image_id}', 'wb') as f:
                                 numpy.save(f, image)
         if in_memory:
             with open(f'image_set_{size_image}/image_ids', 'wb') as f:
-                numpy.save(f, numpy.array(image_id_list, numpy.int32))
+                numpy.save(f, image_ids[:i_image])
             with open(f'image_set_{size_image}/images', 'wb') as f:
-                numpy.save(f, numpy.array(image_list))
+                numpy.save(f, images[:i_image])
     def __init__(self, size_image = 224):
         '''e.g.
         images = ImageSet(64)
         images[i] # returns numpy.ndarray in shape 3, 64, 64
         '''
-        self.size_image = size_image
-        self.in_memory = size_image < 256
         if not os.path.exists(f'image_set_{size_image}'):
-            self.process(size_image, self.in_memory)
+            self.process(size_image)
+        self.size_image = size_image
+        self.in_memory = size_image < size_image_in_memory_max
         self.empty = numpy.zeros((3, size_image, size_image), numpy.float32)
-        self.index = [self.empty] * 600000
+        self.index = [self.empty] * image_id_max
         if self.in_memory:
             with open(f'image_set_{self.size_image}/image_ids', 'rb') as f:
                 image_ids = numpy.load(f)
