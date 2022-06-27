@@ -1,4 +1,5 @@
 import mindspore
+import metric.loss
 _ones = mindspore.ops.Ones()
 _relu = mindspore.ops.ReLU()
 class ResNet18(mindspore.nn.Cell):
@@ -104,18 +105,7 @@ class VQALoss(mindspore.nn.Cell):
         self.net = net
     def construct(self, image, question, answer):
         prediction = self.net(image, question)
-        # loss = ... # some function to compare prediction and answer
-        '''
-        !
-        TODO 2
-        !
-        prediction: mindspore.Tensor in shape (size_batch, length_output_vector)
-        this is the raw output of a VQANet
-        answer: mindspore.Tensor in shape ((size_batch,) + shape_answer)
-        this is the annotation provided by a VQASet
-        calculate the loss between prediction & answer, and assign to loss
-        this function will be differentiated, so do not incorporate complicated algorithms like for-clauses
-        '''
+        loss = metric.loss(prediction, answer)
         return loss
 '''e.g.
 net = VQANet(224, 8, 100, 1024, 1024)
