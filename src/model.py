@@ -1,5 +1,5 @@
 import mindspore
-import metric.loss
+import word2vec
 _ones = mindspore.ops.Ones()
 _relu = mindspore.ops.ReLU()
 class ResNet18(mindspore.nn.Cell):
@@ -105,7 +105,7 @@ class VQALoss(mindspore.nn.Cell):
         self.net = net
     def construct(self, image, question, answer):
         prediction = self.net(image, question)
-        loss = metric.loss(prediction, answer)
+        loss = word2vec.loss(prediction, answer)
         return loss
 '''e.g.
 net = VQANet(224, 8, 100, 1024, 1024)

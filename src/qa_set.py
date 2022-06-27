@@ -28,16 +28,15 @@ class QASet:
         
         rst = []
         for item in  self.Q_A_df['question']:
-            rst.append(self.qst2ndarray(item,self.word2vec_model))
+            rst.append(word2vec.qst2ndarray(item,self.word2vec_model))
 
         self.Q_A_df['question'] = rst
+        rst = []
+        for item in  self.Q_A_df['annotation']:
+            rst.append(word2vec.annotation2ndarray(item,self.word2vec_model))
+
+        self.Q_A_df['annotation'] = rst
         self.Q_A_df.head()
-        '''
-        !
-        TODO 1
-        !
-        encode annotations to numpy.ndarray
-        '''
 
         # word2vec_model
         
@@ -46,17 +45,3 @@ class QASet:
     
     def __len__(self):
         return len(self.Q_A_df)
-
-    
-    def qst2ndarray(self, qst,model):
-        '''
-        note: 尚未测试,可能有bug
-        '''
-        qst_list = []
-        for item in qst:
-            if item == '<INS>':
-                pass
-                # qst_list.append(numpy.zeros((100,), numpy.float32))
-            else :
-                qst_list.append(model[item])
-        return numpy.array(qst_list, numpy.float32)
