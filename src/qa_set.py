@@ -41,7 +41,7 @@ class QASet:
         # word2vec_model
         
     def __getitem__(self, index):
-        return self.Q_A_df['question'][index], self.Q_A_df['question'][index], self.Q_A_df['annotation'][index]
+        return self.Q_A_df['image_id'][index], self.Q_A_df['question'][index], self.Q_A_df['annotation'][index]
     
     def __len__(self):
         return len(self.Q_A_df)
