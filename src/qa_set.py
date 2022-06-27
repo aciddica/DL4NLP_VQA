@@ -8,7 +8,7 @@ class QASet:
     def __init__(self, part):
         # 加载指定问题答案集合
         self.varilen = True
-        self.Q_set,self.A_set = utils.load_json_file(path = '../data', mode = part, cleaned=False)
+        self.Q_set,self.A_set = utils.load_json_file(path = 'data', mode = part, cleaned=False)
         # 问题格式处理，删除标点符号、分词等操作
         self.normalize()
         self.Q_A_df = self.QAmerge()
@@ -60,7 +60,7 @@ class QASet:
         return Q_A_df
         
     def __getitem__(self, index):
-        return self.Q_A_df['qst_vec'][index], self.Q_A_df['ans_vec'][index], self.Q_A_df['image_id'][index]
+        return self.Q_A_df['image_id'][index], self.Q_A_df['qst_vec'][index], self.Q_A_df['ans_vec'][index]
     
     def __len__(self):
         return len(self.Q_A_df)
