@@ -22,7 +22,7 @@ class VQACallback(mindspore.train.callback.Callback):
         if i_epoch % self.period_save == 0:
             mindspore.save_checkpoint(net, f'checkpoint/{i_epoch}.ckpt')
         accuracy = net.accuracy(self.val)
-        print(f'[epoch {i_epoch}] loss: {args.net_outputs.asnumpy():f}, validation accuracy: {accuracy}')
+        print(f'[epoch {i_epoch}] loss: {args.net_outputs.asnumpy()}, validation accuracy: {accuracy}')
 dataset = VQASet(125, 1429, 1429)
 net = VQANet()
 loss = VQALoss(net)
