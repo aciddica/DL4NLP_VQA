@@ -111,7 +111,7 @@ class VQALoss(mindspore.nn.Cell):
         super().__init__(False)
         self.net = net
         self.loss = mindspore.nn.BCEWithLogitsLoss()
-        self._0 = mindspore.Tensor(1, mindspore.float32)
+        self._0 = mindspore.Tensor(0, mindspore.float32)
         self._1 = mindspore.Tensor(1, mindspore.float32)
     def construct(self, image, question, answer):
         prediction = self.net(image, question)
