@@ -110,13 +110,10 @@ class VQALoss(mindspore.nn.Cell):
     def __init__(self, net):
         super().__init__(False)
         self.net = net
-        self.loss = mindspore.ops.BCEWithLogitsLoss()
+        self.loss = mindspore.nn.BCEWithLogitsLoss()
+        self._0 = mindspore.Tensor(1, mindspore.float32)
+        self._1 = mindspore.Tensor(1, mindspore.float32)
     def construct(self, image, question, answer):
         prediction = self.net(image, question)
-        answer = _one_hot(
-            answer,
-            word2vec.size_vocabulary,
-            mindspore.Tensor(1, mindspore.float32),
-            mindspore.Tensor(0, mindspore.float32),
-        )
+        answer = _one_hot(answer, word2vec.size_vocabulary, self._1, self._0)
         return self.loss(prediction, answer)
