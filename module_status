@@ -1,9 +1,8 @@
-attention   error
 image_set   tested
 model       tested
 qa_set      tested
-test        tested with dummy file
-train       tested with dummy file
-utils       complete, untested
+test        tested
+train       tested
+utils       tested
 vqa_set     tested
-word2vec    incomplete
+word2vec    tested
