@@ -103,9 +103,9 @@ class VQANet(mindspore.nn.Cell):
         n_rows = 0
         for image, question, answer in dataset:
             prediction = self.construct(image, question)
-            n_hits += sum(prediction.asnumpy().argmax(1) == answer)
+            n_hits += (prediction.argmax(1) == answer).sum()
             n_rows += len(answer)
-        return n_hits / n_rows
+        return n_hits.astype(mindspore.float32) / n_rows
 class VQALoss(mindspore.nn.Cell):
     def __init__(self, net):
         super().__init__(False)
