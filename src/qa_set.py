@@ -7,7 +7,10 @@ import word2vec
 class QASet:
     def __init__(self, part):
         # 加载指定问题答案集合
-        self.varilen = True
+        self.varilen = False
+        self.size_word = 100
+        self.size_question = 8
+        self.size_annotation = 8
         self.Q_set,self.A_set = utils.load_json_file(path = 'data', mode = part, cleaned=False)
         # 问题格式处理，删除标点符号、分词等操作
         self.normalize()

@@ -1,4 +1,6 @@
 import mindspore
+# import attention
+# 整合了半天还是报错，目前按原来的简单结构，可通过测试
 import word2vec
 _ones = mindspore.ops.Ones()
 _relu = mindspore.ops.ReLU()
@@ -56,22 +58,23 @@ class ResNet18(mindspore.nn.Cell):
 class LSTM512(mindspore.nn.Cell):
     def __init__(self, size_word, size_feature):
         super().__init__()
-        self.lstm = mindspore.nn.LSTM(size_word, 512, 2, batch_first = True)
-        self.end = mindspore.nn.Dense(512, size_feature)
+        self.lstm = mindspore.nn.LSTM(
+            size_word, 512, 1,
+            batch_first = True,
+            bidirectional = True,
+        )
+        self.end = mindspore.nn.SequentialCell([
+            mindspore.nn.Flatten(),
+            mindspore.nn.Dense(8192, size_feature),
+        ])
     def construct(self, x):
-        size_batch = x.shape[0]
-        x = self.lstm(
-            x,
-            (
-                _ones((2, size_batch, 512), mindspore.float32),
-                _ones((2, size_batch, 512), mindspore.float32),
-            ),
-        )[1][0][1]
+        ones = _ones((2, x.shape[0], 512), mindspore.float32)
+        x = self.lstm(x, (ones, ones))[0]
         x = _relu(x)
         x = self.end(x)
         return x
 class VQANet(mindspore.nn.Cell):
-    def __init__(self, size_image, size_question, size_word, size_feature, size_output):
+    def __init__(self, size_image = 224, size_word = 100, size_feature = 1024, size_output = 1024):
         '''e.g.
         vqa_net = VQANet(224, 8, 100, 1024, 1024)
         # result of the above example:
@@ -82,7 +85,6 @@ class VQANet(mindspore.nn.Cell):
         '''
         super().__init__()
         self.size_image = size_image
-        self.size_question = size_question
         self.size_word = size_word
         self.size_feature = size_feature
         self.size_output = size_output

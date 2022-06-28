@@ -1,6 +1,12 @@
 import numpy
+import os
 import re
+import mindspore
 from multiprocessing import cpu_count
+try:
+    import gensim
+except:
+    os.system('pip install gensim')
 from gensim.models import Word2Vec
 from gensim.models import KeyedVectors
 from gensim import corpora
@@ -49,7 +55,6 @@ def QA2ndarray(qst,model):
             qst_tensor.append(model[item])
             if len(model[item]) != 100:
                 raise Exception("lenth fail : {},word : {}".format(len(model[item]),item))
-
     return numpy.array(qst_tensor)
 
 # def ans2ndarray(ans, model):
@@ -78,21 +83,23 @@ def decode(prediction):
     prediction = mindspore.Tensor([[0.2, 2.5, ...], [-3.1, 0, ...]])
     decode(prediction) -> 'yes', 'two'
     '''
-def accuracy(prediction, answer):
+def decode_embedding(prediction):
     '''
     prediction: mindspore.Tensor in shape (size_batch, length_output_vector)
     this is the raw output of a VQANet
-    answer: mindspore.Tensor in shape ((size_batch,) + shape_answer)
-    this is the annotation provided by a VQASet
-    returns the proportion of correct predictions
+    decode each row to its embedding, and return mindspore.Tensor in shape (size_batch, 8, 100)
     e.g.
-    prediction = mindspore.Tensor([
-        [0.2, 2.5, ...], # correct
-        [-3.1, 0, ...], # wrong
-    ])
-    answer = mindspore.Tensor([annotation1, annotation2])
-    accuracy(prediction, answer) -> 0.5
+    prediction = mindspore.Tensor([[0.2, 2.5, ...], [-3.1, 0, ...]])
+    decode(prediction) -> mindspore.Tensor(
+        [
+            [[1.1, ...], [...], [...], [...], [...], [...], [...], [...]], # answer 1
+            ... # answer 2
+        ],
+        mindspore.float32
+    )
     '''
+    # dummy code
+    return mindspore.ops.Zeros()((prediction.shape[0], 8, 100), mindspore.float32)
 def loss(prediction, answer):
     '''
     prediction: mindspore.Tensor in shape (size_batch, length_output_vector)
@@ -102,3 +109,5 @@ def loss(prediction, answer):
     calculate the loss between prediction & answer, and assign to loss
     this function will be differentiated, so do not incorporate complicated algorithms like for-clauses
     '''
+    # dummy code
+    return mindspore.ops.Zeros()((), mindspore.float32)
