@@ -11,6 +11,8 @@ from gensim.models import Word2Vec
 from gensim.models import KeyedVectors
 from gensim import corpora
 
+size_vocabulary = 4812
+
 def get_vocab(Q_set,A_set,config,stoplist):
     
     Vocab = []
