@@ -23,12 +23,18 @@ class QASet:
             qst_vec.append(word2vec.QA2ndarray(item,self.word2vec_model))
 
         self.Q_A_df['qst_vec'] = qst_vec
-
-        ans_vec = []
-        for item in  self.Q_A_df['annotation']:
-            ans_vec.append(word2vec.QA2ndarray(item,self.word2vec_model))
         
-        self.Q_A_df['ans_vec'] = ans_vec
+        answers = []
+        ans_one_hot = []
+        for item in self.Q_A_df['annotation']:
+            if item not in answers:
+                answers.append(item)
+                ans_one_hot.append(len(answers) - 1)
+            else:
+                ans_one_hot.append(answers.index(item))
+        
+        self.size_vocabulary = len(answers)
+        self.Q_A_df['ans_one_hot'] = ans_one_hot
         self.Q_A_df.head()
 
     def normalize(self):
@@ -63,7 +69,7 @@ class QASet:
         return Q_A_df
         
     def __getitem__(self, index):
-        return self.Q_A_df['image_id'][index], self.Q_A_df['qst_vec'][index], self.Q_A_df['ans_vec'][index]
+        return self.Q_A_df['image_id'][index], self.Q_A_df['qst_vec'][index], self.Q_A_df['ans_one_hot'][index]
     
     def __len__(self):
         return len(self.Q_A_df)
