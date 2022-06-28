@@ -1,7 +1,6 @@
 import mindspore
-# import attention
-# 整合了半天还是报错，目前按原来的简单结构，可通过测试
 import word2vec
+_one_hot = mindspore.ops.OneHot()
 _ones = mindspore.ops.Ones()
 _relu = mindspore.ops.ReLU()
 class ResNet18(mindspore.nn.Cell):
@@ -74,45 +73,50 @@ class LSTM512(mindspore.nn.Cell):
         x = self.end(x)
         return x
 class VQANet(mindspore.nn.Cell):
-    def __init__(self, size_image = 224, size_word = 100, size_feature = 1024, size_output = 1024):
+    def __init__(self, size_image = 224, size_word = 100, size_feature = 1024):
         '''e.g.
-        vqa_net = VQANet(224, 8, 100, 1024, 1024)
+        vqa_net = VQANet(224, 8, 100, 1024)
         # result of the above example:
         # images are in shape 3, 224, 224
         # questions are in shape 8, 100
         # internal features are in shape 1024,
-        # output vectors are in shape 1024,
         '''
         super().__init__()
         self.size_image = size_image
         self.size_word = size_word
         self.size_feature = size_feature
-        self.size_output = size_output
         self.cell_image = ResNet18(size_image, size_feature)
         self.cell_question = LSTM512(size_word, size_feature)
         self.cell_feature = mindspore.nn.SequentialCell([
-            mindspore.nn.Dense(size_feature, size_output),
+            mindspore.nn.Dense(size_feature, word2vec.size_vocabulary),
             mindspore.nn.Softmax(),
         ])
     def construct(self, image, question):
         image = self.cell_image(image)
         question = self.cell_question(question)
-        feature = image * question # tbd, some attention operation
+        feature = image * question
         feature = _relu(feature)
         feature = self.cell_feature(feature)
         return feature
+    def accuracy(self, dataset):
+        n_hits = 0
+        n_rows = 0
+        for image, question, answer in dataset:
+            prediction = self.construct(image, question)
+            n_hits += sum(prediction.asnumpy().argmax(1) == answer)
+            n_rows += len(answer)
+        return n_hits / n_rows
 class VQALoss(mindspore.nn.Cell):
     def __init__(self, net):
         super().__init__(False)
         self.net = net
+        self.loss = mindspore.ops.BCEWithLogitsLoss()
     def construct(self, image, question, answer):
         prediction = self.net(image, question)
-        loss = word2vec.loss(prediction, answer)
-        return loss
-'''e.g.
-net = VQANet(224, 8, 100, 1024, 1024)
-loss = VQALoss(net)
-optimizer = mindspore.nn.SGD(loss.trainable_params())
-model = mindspore.Model(loss, None, optimizer)
-model.train(n_epochs, dataset.train, ...)
-'''
+        answer = _one_hot(
+            answer,
+            word2vec.size_vocabulary,
+            mindspore.Tensor(1, mindspore.float32),
+            mindspore.Tensor(0, mindspore.float32),
+        )
+        return self.loss(prediction, answer)

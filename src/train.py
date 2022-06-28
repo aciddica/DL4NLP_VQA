@@ -2,7 +2,6 @@ import os
 import mindspore
 import mindspore.dataset
 from model import VQANet, VQALoss
-import test
 from vqa_set import VQASet
 import word2vec
 input(
@@ -22,7 +21,7 @@ class VQACallback(mindspore.train.callback.Callback):
         i_epoch = args.cur_epoch_num
         if i_epoch % self.period_save == 0:
             mindspore.save_checkpoint(net, f'checkpoint/{i_epoch}.ckpt')
-        accuracy = test.accuracy(net, self.val)
+        accuracy = net.accuracy(self.val)
         print(f'[epoch {i_epoch}] loss: {args.net_outputs.asnumpy():f}, validation accuracy: {accuracy}')
 dataset = VQASet(125, 1429, 1429)
 net = VQANet()
