@@ -21,19 +21,20 @@ def load_json_file(path,mode,cleaned):
     else:
         Q_set = json.load(j_path)['questions']
     j_path.close()
-    if(mode == 'train'):
-        a_path = open(os.path.join(path, 'annotations/train.json'))
-    elif(mode == 'val'):
-        a_path = open(os.path.join(path, 'annotations/val.json'))
-    else:
-        a_path = open(os.path.join(path, 'annotations/test.json'))
-    if cleaned:
-        A_set = json.load(a_path)
-    else:
-        A_set = json.load(a_path)['annotations']
+    a1_path = open(os.path.join(path, 'annotations/train.json'))
+    a2_path = open(os.path.join(path, 'annotations/val.json'))
+    a3_path = open(os.path.join(path, 'annotations/test.json'))
 
-    a_path.close()
-    return Q_set,A_set
+    A1_set = json.load(a1_path)['annotations']
+    A2_set = json.load(a2_path)['annotations']
+    A3_set = json.load(a3_path)['annotations']
+
+    # A1_set.update(A2_set)
+    # A1_set.update(A3_set)
+    a1_path.close()
+    a2_path.close()
+    a3_path.close()
+    return Q_set,A1_set + A2_set + A3_set
 
 def get_all_img_id(path):
     '''
