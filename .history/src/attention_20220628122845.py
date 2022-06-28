@@ -1,3 +1,5 @@
+from numpy import expand_dims
+from torch import unsqueeze
 import mindspore.nn as nn
 import mindspore.ops as ops
 class Attention(nn.cell):
@@ -21,11 +23,9 @@ class Attention(nn.cell):
         if getattr(self, 'dropout'):
             ha = self.dropout(ha)
         # N * 196 * 512 -> N * 196 * 1 -> N * 196
-        ha = self.ff_attention(ha)
-        squeeze = ops.Squeeze(2)
-        ha = squeeze(ha)
+        ha = self.ff_attention(ha).squeeze(dim=2)
         pi = nn.Softmax(ha)
         # (N * 196 * 1, N * 196 * 1024) -> N * 1024
-        vi_attended = (expand_dims(pi, 2) * vi).sum(dim=1)
+        vi_attended = (pi.unsqueeze(dim=2) * vi).sum(dim=1)
         u = vi_attended + vq
         return u

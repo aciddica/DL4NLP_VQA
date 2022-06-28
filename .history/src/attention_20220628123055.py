@@ -1,3 +1,5 @@
+from numpy import expand_dims
+from torch import unsqueeze
 import mindspore.nn as nn
 import mindspore.ops as ops
 class Attention(nn.cell):
