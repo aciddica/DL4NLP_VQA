@@ -1,3 +1,0 @@
-import mindspore
-class Attention():
-    
