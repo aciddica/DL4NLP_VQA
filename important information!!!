@@ -1,0 +1,4 @@
+必须使用镜像“mindspore1.7.0-cuda10.1-py3.7-ubuntu18.04”
+必须使用原始配置，不能修改mindspore.context
+网络只接受定长输入，使用点乘而非attention
+这是目前唯一测试不报错的（镜像，配置，网络结构）组合
